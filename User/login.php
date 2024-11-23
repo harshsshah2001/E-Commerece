@@ -41,7 +41,7 @@ if ($_SERVER["REQUEST_METHOD"] == 'POST' && isset($_POST['submit'])) {
 
                     // Set Gmail credentials
                     $mail->Username = "hs6648279@gmail.com";  // Your Gmail address
-                    $mail->Password = "hmdh jshj qqcf aqzt";    // Your Gmail App Password
+                    $mail->Password = "";    // Your Gmail App Password
                     $mail->setFrom("$email", "Harsh Shah"); // Sender details
 
                     // Email details
