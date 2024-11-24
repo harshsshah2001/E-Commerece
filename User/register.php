@@ -53,7 +53,7 @@ if ($_SERVER["REQUEST_METHOD"] == "POST" && isset($_POST["submit"])) {
 
                     echo "<script>
                         setTimeout(function() {
-                            window.location.href = 'login.php';
+                            window.location.href = 'otp_verify.php';
                         }, 1000); 
                     </script>";
                 } else {

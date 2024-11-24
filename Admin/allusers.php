@@ -53,14 +53,6 @@ $status = isset($_GET['status']) ? $_GET['status'] : '';
     <div class="container mt-5">
         <h2 class="text-center">User List</h2>
 
-        <!-- Display status messages -->
-        <?php if ($status === 'deleted'): ?>
-            <div class="alert alert-success">Selected users have been deleted successfully!</div>
-        <?php elseif ($status === 'error'): ?>
-            <div class="alert alert-danger">Error occurred while deleting users. Please try again.</div>
-        <?php elseif ($status === 'no_selection'): ?>
-            <div class="alert alert-warning">No users were selected for deletion.</div>
-        <?php endif; ?>
 
         <!-- Search Form -->
         <form method="GET" action="<?= htmlspecialchars($_SERVER['PHP_SELF']); ?>" class="mb-3">

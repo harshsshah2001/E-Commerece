@@ -21,6 +21,7 @@ if (!isset($_SESSION['email'])) {
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Wishlist</title>
+    <script src="https://checkout.razorpay.com/v1/checkout.js"></script>
     <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
     <script src="https://checkout.razorpay.com/v1/checkout.js"></script>
     <style>
@@ -155,6 +156,7 @@ if (!isset($_SESSION['email'])) {
         <?php
         include('../conn.php');
 
+        $amount = 0;
         // Check if the required parameters are set
         if (isset($_GET["title"]) && isset($_GET["price"]) && isset($_GET["image"])) {
             $title = $_GET["title"];
@@ -180,6 +182,8 @@ if (!isset($_SESSION['email'])) {
 
         if (mysqli_num_rows($results) > 0) {
             while ($rows = mysqli_fetch_assoc($results)) {
+                $amount = $rows['price'];
+
                 echo ' 
         <div class="wishlist-cards">
             <div class="wishlist-card">
@@ -189,7 +193,8 @@ if (!isset($_SESSION['email'])) {
                     <p class="wishlist-card-price">$' . $rows['price'] .  '</p>
                    
                     <a href="wishlist_delete.php?id=' . $rows['id'] . '" style="background-color: dange;">Remove</a>
-                    <button class="btn btn-dark text-uppercase mt-3" id="payButton">Shop Collection</button>
+                  
+    <button id="payButton" class="btn btn-dark text-uppercase mt-3" >Pay Now</button>
                     
                     </div>
                     </div>
