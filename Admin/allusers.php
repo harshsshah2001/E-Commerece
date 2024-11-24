@@ -9,13 +9,35 @@ if (!isset($_SESSION["admin_name"])) {
     exit;
 }
 
-// Fetch user data
-$sql = "SELECT * FROM user_register";
+// Handle Search
+$searchQuery = ""; // Initialize search query
+if ($_SERVER['REQUEST_METHOD'] === 'GET' && isset($_GET['search'])) {
+    $searchQuery = mysqli_real_escape_string($conn, trim($_GET['search']));
+    $sql = "SELECT * FROM user_register WHERE name LIKE '%$searchQuery%' OR email LIKE '%$searchQuery%' OR phone LIKE '%$searchQuery%'";
+} else {
+    $sql = "SELECT * FROM user_register";
+}
 $result = mysqli_query($conn, $sql);
 
-// Check for status in the URL for SweetAlert notifications
-$status = isset($_GET['status']) ? $_GET['status'] : '';
+// Handle bulk delete request
+if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['delete_selected'])) {
+    if (isset($_POST['user_ids']) && is_array($_POST['user_ids'])) {
+        $userIds = implode(',', array_map('intval', $_POST['user_ids'])); // Sanitize IDs
+        $deleteQuery = "DELETE FROM user_register WHERE id IN ($userIds)";
+        if (mysqli_query($conn, $deleteQuery)) {
+            $status = 'deleted';
+        } else {
+            $status = 'error';
+        }
+    } else {
+        $status = 'no_selection';
+    }
+    header("Location: " . $_SERVER['PHP_SELF'] . "?status=$status");
+    exit;
+}
 
+// Check for status in the URL for status messages
+$status = isset($_GET['status']) ? $_GET['status'] : '';
 ?>
 <!DOCTYPE html>
 <html lang="en">
@@ -25,111 +47,71 @@ $status = isset($_GET['status']) ? $_GET['status'] : '';
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Admin - User Data</title>
     <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
-    <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/5.15.4/css/all.min.css" rel="stylesheet">
-    <script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
 </head>
 
 <body>
     <div class="container mt-5">
         <h2 class="text-center">User List</h2>
-        <table class="table table-bordered table-striped">
-            <thead>
-                <tr>
-                    <th>ID</th>
-                    <th>Name</th>
-                    <th>Email</th>
-                    <th>Phone</th>
-                    <th>Image</th>
-                    <th>Action</th>
-                </tr>
-            </thead>
-            <tbody>
-                <?php if (mysqli_num_rows($result) > 0): ?>
-                    <?php while ($row = mysqli_fetch_assoc($result)): ?>
-                        <tr>
-                            <td><?= $row['id']; ?></td>
-                            <td><?= htmlspecialchars($row["name"]); ?></td>
-                            <td><?= htmlspecialchars($row["email"]); ?></td>
-                            <td><?= htmlspecialchars($row["phone"]); ?></td>
-                            <td>
-                                <img src='../uploads/<?= htmlspecialchars($row['image']); ?>' alt='User Image' style='width: 50px; height: 50px;'>
-                            </td>
-                            <td>
-                                <a href='edit_user.php?id=<?= $row['id']; ?>' class='btn btn-sm btn-warning'>
-                                    <i class='fas fa-edit'></i> Edit
-                                </a>
-                                <button class='btn btn-sm btn-danger delete-btn' data-id='<?= $row['id']; ?>'>
-                                    <i class='fas fa-trash'></i> Delete
-                                </button>
-                            </td>
-                        </tr>
-                    <?php endwhile; ?>
-                <?php else: ?>
+
+        <!-- Display status messages -->
+        <?php if ($status === 'deleted'): ?>
+            <div class="alert alert-success">Selected users have been deleted successfully!</div>
+        <?php elseif ($status === 'error'): ?>
+            <div class="alert alert-danger">Error occurred while deleting users. Please try again.</div>
+        <?php elseif ($status === 'no_selection'): ?>
+            <div class="alert alert-warning">No users were selected for deletion.</div>
+        <?php endif; ?>
+
+        <!-- Search Form -->
+        <form method="GET" action="<?= htmlspecialchars($_SERVER['PHP_SELF']); ?>" class="mb-3">
+            <div class="input-group">
+                <input type="text" name="search" class="form-control" placeholder="Search by name, email, or phone" value="<?= htmlspecialchars($searchQuery); ?>">
+                <button type="submit" class="btn btn-primary">Search</button>
+            </div>
+        </form>
+
+        <!-- User Table -->
+        <form method="POST" action="<?= htmlspecialchars($_SERVER['PHP_SELF']); ?>">
+            <table class="table table-bordered table-striped">
+                <thead>
                     <tr>
-                        <td colspan="6" class="text-center">No users found</td>
+                        <th>Delete</th>
+                        <th>ID</th>
+                        <th>Name</th>
+                        <th>Email</th>
+                        <th>Phone</th>
+                        <th>Image</th>
+                        <th>Action</th>
                     </tr>
-                <?php endif; ?>
-            </tbody>
-        </table>
+                </thead>
+                <tbody>
+                    <?php if (mysqli_num_rows($result) > 0): ?>
+                        <?php while ($row = mysqli_fetch_assoc($result)): ?>
+                            <tr>
+                                <td><input type="checkbox" name="user_ids[]" value="<?= $row['id']; ?>"></td>
+                                <td><?= $row['id']; ?></td>
+                                <td><?= htmlspecialchars($row["name"]); ?></td>
+                                <td><?= htmlspecialchars($row["email"]); ?></td>
+                                <td><?= htmlspecialchars($row["phone"]); ?></td>
+                                <td>
+                                    <img src='../uploads/<?= htmlspecialchars($row['image']); ?>' alt='User Image' style='width: 50px; height: 50px;'>
+                                </td>
+                                <td>
+                                    <a href='edit_user.php?id=<?= $row['id']; ?>' class='btn btn-sm btn-warning'>Edit</a>
+                                    <a href='delete_user.php?id=<?= $row['id']; ?>' class='btn btn-sm btn-danger'>Delete</a>
+                                </td>
+                            </tr>
+                        <?php endwhile; ?>
+                    <?php else: ?>
+                        <tr>
+                            <td colspan="7" class="text-center">No users found</td>
+                        </tr>
+                    <?php endif; ?>
+                </tbody>
+            </table>
+            <button type="submit" name="delete_selected" class="btn btn-danger">Delete Selected</button>
+        </form>
     </div>
-
-    <script>
-        // Handle delete action with SweetAlert
-        document.addEventListener('DOMContentLoaded', function() {
-            const deleteButtons = document.querySelectorAll('.delete-btn');
-
-            deleteButtons.forEach(button => {
-                button.addEventListener('click', function() {
-                    const userId = this.getAttribute('data-id');
-
-                    Swal.fire({
-                        title: 'Are you sure?',
-                        text: "This action cannot be undone!",
-                        icon: 'warning',
-                        showCancelButton: true,
-                        confirmButtonColor: '#d33',
-                        cancelButtonColor: '#3085d6',
-                        confirmButtonText: 'Yes, delete it!'
-                    }).then((result) => {
-                        if (result.isConfirmed) {
-                            // Perform AJAX request
-                            fetch(`delete_user.php?id=${userId}`, {
-                                    method: 'GET'
-                                })
-                                .then(response => response.text())
-                                .then(data => {
-                                    if (data.trim() === "success") {
-                                        Swal.fire('Deleted!', 'The user has been deleted.', 'success').then(() => {
-                                            location.reload(); // Reload the page
-                                        });
-                                    } else {
-                                        Swal.fire('Error!', 'Failed to delete the user.', 'error');
-                                    }
-                                });
-                        }
-                    });
-                });
-            });
-
-            // Display SweetAlert based on the status query parameter
-            const status = '<?= $status; ?>';
-            if (!status === 'deleted') {
-                Swal.fire({
-                    title: 'Deleted!',
-                    text: 'User has been deleted successfully.',
-                    icon: 'success',
-                    confirmButtonText: 'OK'
-                });
-            } else if (status === 'error') {
-                Swal.fire({
-                    title: 'Error!',
-                    text: 'There was a problem deleting the user. Please try again.',
-                    icon: 'error',
-                    confirmButtonText: 'OK'
-                });
-            }
-        });
-    </script>
 </body>
 
 </html>

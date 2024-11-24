@@ -1,9 +1,6 @@
 <?php
 include("../conn.php");
-require '../vendor/autoload.php'; // Adjust the path if needed
 
-use PHPMailer\PHPMailer\PHPMailer;
-use PHPMailer\PHPMailer\Exception;
 
 session_start();
 if ($_SERVER["REQUEST_METHOD"] == 'POST' && isset($_POST['submit'])) {
@@ -24,62 +21,8 @@ if ($_SERVER["REQUEST_METHOD"] == 'POST' && isset($_POST['submit'])) {
             $_SESSION['email'] = $email;
             $_SESSION['name'] = $name;
 
-            // email code 
-            function smtp_mailer($to, $subject, $msg)
-            {
-                try {
-                    // Initialize PHPMailer
-                    $email = $_SESSION['email'];
-                    $mail = new PHPMailer(true);
-                    $mail->isSMTP();
-                    $mail->SMTPAuth = true;
-                    $mail->SMTPSecure = 'tls';
-                    $mail->Host = "smtp.gmail.com";
-                    $mail->Port = 587;
-                    $mail->isHTML(true);
-                    $mail->CharSet = 'UTF-8';
-
-                    // Set Gmail credentials
-                    $mail->Username = "hs6648279@gmail.com";  // Your Gmail address
-                    $mail->Password = "hmdh jshj qqcf aqzt";    // Your Gmail App Password
-                    $mail->setFrom("$email", "Harsh Shah"); // Sender details
-
-                    // Email details
-                    $mail->Subject = $subject;
-                    $mail->Body = $msg;
-                    $mail->addAddress($to);
-
-                    // SMTP options for compatibility
-                    $mail->SMTPOptions = array(
-                        'ssl' => array(
-                            'verify_peer' => false,
-                            'verify_peer_name' => false,
-                            'allow_self_signed' => true
-                        )
-                    );
-
-                    // Send email
-                    $mail->send();
-                } catch (Exception $e) {
-                    return "Mailer Error: " . $mail->ErrorInfo;
-                }
-            }
-            $msg = '
-            <h1 style="color: blue;">Welcome to Our Platform!</h1>
-            <p style="color: gray; font-size: 16px;">
-                Thank you for joining us. We are excited to have you on board. 
-                Please feel free to explore and get started.
-            </p>
-        ';
-            $attachmentPath = "../uploads/cat-item1.jpg"; // Update the path as needed
-
-            // Debug: Verify email address
-            $email = isset($_SESSION['email']) ? $_SESSION['email'] : "recipient_email@example.com";
-
-            // Call the function to send email
-            echo smtp_mailer($email, 'Test Subject', $msg, $attachmentPath);
+            header('Location: ../index.php');
         }
-        header('Location: ../index.php');
     }
 }
 ?>
@@ -139,6 +82,7 @@ if ($_SERVER["REQUEST_METHOD"] == 'POST' && isset($_POST['submit'])) {
 
 <body>
     <div class="login-card">
+        <h5 style="color: red;"> If You are first time register check registered email For verification.</h5>
         <h3 class="text-center mb-4">Login</h3>
         <?php if (isset($error)): ?>
             <div class="alert alert-danger">

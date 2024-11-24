@@ -1,39 +1,117 @@
 <?php
 // Ensure session starts before any output
 session_start();
+require '../vendor/autoload.php'; // Adjust the path if needed
 
+use PHPMailer\PHPMailer\PHPMailer;
+use PHPMailer\PHPMailer\Exception;
+
+// Include database connection
 include('../conn.php');
 
+// Generate a 5-digit OTP
+$otp = substr(str_shuffle("0123456789"), 0, 5);
+
+// Check if the form is submitted
 if ($_SERVER["REQUEST_METHOD"] == "POST" && isset($_POST["submit"])) {
+    // Sanitize and retrieve form inputs
     $name = mysqli_real_escape_string($conn, trim($_POST["name"]));
     $email = mysqli_real_escape_string($conn, trim($_POST["email"]));
     $phone = mysqli_real_escape_string($conn, trim($_POST["phone"]));
     $password = mysqli_real_escape_string($conn, trim($_POST["password"]));
     $hashedPassword = password_hash($password, PASSWORD_BCRYPT);
-
-    // Handle file upload
     $image = $_FILES['image']['name'];
     $target_dir = "../uploads/";
     $target_file = $target_dir . basename($image);
 
-    if (move_uploaded_file($_FILES['image']['tmp_name'], $target_file)) {
-        $current_date = date('Y-m-d H:i:s');
+    // Check if the email is already registered
+    $emailCheckQuery = "SELECT `email` FROM `user_register` WHERE email='$email'";
+    $emailCheckResult = mysqli_query($conn, $emailCheckQuery);
 
-        $sql = "INSERT INTO `user_register`(`name`, `email`, `phone`, `image`, `password`,`created_at`) 
-                VALUES ('$name', '$email', '$phone', '$image', '$hashedPassword','$current_date')";
-        $result = mysqli_query($conn, $sql);
-
-        if ($result) {
-            header("Location: login.php");
-            exit; // Ensure script stops after redirect
-        } else {
-            echo "Error in registration.";
-        }
+    if (mysqli_num_rows($emailCheckResult) > 0) {
+        echo "<p style='color: red;'>Email is already registered!</p>";
     } else {
-        echo "File upload failed.";
+        // Move the uploaded file
+        if (move_uploaded_file($_FILES['image']['tmp_name'], $target_file)) {
+            $current_date = date('Y-m-d H:i:s');
+
+            // Insert user details into the database with OTP and default status
+            $insertQuery = "INSERT INTO `user_register`(`name`, `email`, `phone`, `image`, `password`, `created_at`, `otp`) 
+                            VALUES ('$name', '$email', '$phone', '$image', '$hashedPassword', '$current_date', '$otp')";
+            $insertResult = mysqli_query($conn, $insertQuery);
+
+            if ($insertResult) {
+                // Send OTP via email
+                $msg = "
+                    <h1 style='color: red;'>Welcome to Our Harsh HUB!</h1>
+                    <p style='color: gray; font-size: 16px;'>
+                        Thank you for joining us. Your OTP for account verification is: <strong>$otp</strong>
+                    </p>";
+
+                if (smtp_mailer($email, 'Account Verification OTP', $msg)) {
+                    echo "<p style='color: green;'>OTP has been sent to your email. Please verify your account.</p>";
+
+                    echo "<script>
+                        setTimeout(function() {
+                            window.location.href = 'login.php';
+                        }, 1000); 
+                    </script>";
+                } else {
+                    echo "<p style='color: red;'>Failed to send OTP email.</p>";
+                }
+            } else {
+                echo "<p style='color: red;'>Error in registration.</p>";
+            }
+        } else {
+            echo "<p style='color: red;'>File upload failed.</p>";
+        }
+    }
+}
+
+// Function to send email
+function smtp_mailer($to, $subject, $msg)
+{
+
+    try {
+
+        $email = $_POST['email'];
+
+        $mail = new PHPMailer(true);
+        $mail->isSMTP();
+        $mail->SMTPAuth = true;
+        $mail->SMTPSecure = 'tls';
+        $mail->Host = "smtp.gmail.com";
+        $mail->Port = 587;
+        $mail->isHTML(true);
+        $mail->CharSet = 'UTF-8';
+
+        // Set Gmail credentials
+        $mail->Username = "hs6648279@gmail.com";  // Replace with your Gmail address
+        $mail->Password = "hmdh jshj qqcf aqzt"; // Replace with your Gmail App Password
+        $mail->setFrom($email, "Harsh Shah"); // Replace with your sender details
+
+        // Email details
+        $mail->Subject = $subject;
+        $mail->Body = $msg;
+        $mail->addAddress($to);
+
+        // SMTP options for compatibility
+        $mail->SMTPOptions = array(
+            'ssl' => array(
+                'verify_peer' => false,
+                'verify_peer_name' => false,
+                'allow_self_signed' => true
+            )
+        );
+
+        // Send email
+        return $mail->send();
+    } catch (Exception $e) {
+        return false;
     }
 }
 ?>
+
 
 <!DOCTYPE html>
 <html lang="en">
