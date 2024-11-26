@@ -12,9 +12,9 @@ $amount_in_inr = $amount / 100;
 
 $userName = isset($_SESSION['name']) ? $_SESSION['name'] : 'No username';
 try {
-
+    $email = $_SESSION["email"];
     // Insert payment details into the database
-    $stmt = mysqli_query($conn, "INSERT INTO payment (name, order_id, amount) VALUES ('$userName', '$order_id', '$amount_in_inr')");
+    $stmt = mysqli_query($conn, "INSERT INTO payment (name, order_id, amount,email) VALUES ('$userName', '$order_id', '$amount_in_inr','$email')");
 
     if ($stmt) {
         echo "<h1>Payment Successful</h1>";

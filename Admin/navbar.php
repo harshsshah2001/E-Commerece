@@ -70,6 +70,9 @@ if (isset($_SESSION["admin_name"])) {
                         </ul>
                     </li>
 
+                    <a class="nav-link" href="all_orders.php" id="collectionDropdown" role="button" aria-expanded="false" style="color:black;font-size:larger;">
+                        All_Orders
+                    </a>
                 </ul>
                 <p style="color:black;font-size:larger;margin-right: 20px;margin-top: 13px;">Hello ! <?php echo "$name"; ?></p>
                 <a href='Admin_logout.php' class='btn btn-danger'>Logout</a>

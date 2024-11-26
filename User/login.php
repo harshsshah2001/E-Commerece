@@ -106,6 +106,7 @@ if ($_SERVER["REQUEST_METHOD"] == 'POST' && isset($_POST['submit'])) {
             <!-- Submit Button -->
             <button type="submit" name="submit" class="btn btn-primary w-100">Login</button>
         </form>
+        <a href="./forgot_password.php" style="color: red;">Forgot Password</a>
     </div>
 
     <!-- Bootstrap Bundle with Popper -->
