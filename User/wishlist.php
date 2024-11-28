@@ -193,7 +193,11 @@ $amount = 0;
                    
                     <a href="wishlist_delete.php?id=' . $rows['id'] . '" style="background-color: dange;">Remove</a>
                   
-    <button id="payButton" class="btn btn-dark text-uppercase mt-3" >Pay Now</button>
+<button class="payButton btn btn-dark text-uppercase mt-3"
+        data-amount=' . htmlspecialchars($rows['price'] * 100) . '
+        data-title=' . htmlspecialchars($rows['title']) . '>
+    Pay Now
+</button>
                     
                     </div>
                     </div>
@@ -206,36 +210,47 @@ $amount = 0;
     <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js">
     </script>
     <script>
-        document.getElementById('payButton').onclick = function(e) {
-            var options = {
-                "key": "rzp_test_xKpWOmC2HxLD0g", // Enter the Key ID generated from the Dashboard
-                "amount": "<?php echo $amount * 100 ?>", // Amount is in currency subunits. Default currency is INR.
-                "currency": "INR",
-                "name": "Your Company Name",
-                "description": "Purchase Description",
-                "image": "https://yourdomain.com/your_logo.png",
-                "handler": function(response) {
-                    alert("Payment successful. Payment ID: " + response.razorpay_payment_id);
-                    // Redirect to another page with order ID and amount as query parameters
-                    window.location.href = "payment_success.php?amount=" + options.amount + "&order_id=" + response.razorpay_payment_id;
-                },
-                "prefill": {
-                    "name": "John Doe",
-                    "email": "john.doe@example.com",
-                    "contact": "9999999999"
-                },
-                "notes": {
-                    "address": "Hello World"
-                },
-                "theme": {
-                    "color": "#F37254"
-                }
-            };
-            var rzp1 = new Razorpay(options);
-            rzp1.open();
-            e.preventDefault();
-        }
+        document.addEventListener('DOMContentLoaded', function() {
+            const payButtons = document.querySelectorAll('.payButton');
+
+            payButtons.forEach(function(button) {
+                button.addEventListener('click', function(e) {
+                    const amount = this.getAttribute('data-amount'); // Retrieve the amount
+                    const title = this.getAttribute('data-title'); // Retrieve the product title
+
+                    var options = {
+                        "key": "rzp_test_xKpWOmC2HxLD0g", // Enter the Key ID generated from the Dashboard
+                        "amount": amount, // Amount is in currency subunits. Default currency is INR.
+                        "currency": "INR",
+                        "name": "Your Company Name",
+                        "description": `Purchase for ${title}`, // Dynamically set the description
+                        "image": "https://yourdomain.com/your_logo.png",
+                        "handler": function(response) {
+                            alert("Payment successful. Payment ID: " + response.razorpay_payment_id);
+                            // Redirect to another page with order ID and amount as query parameters
+                            window.location.href = "payment_success.php?amount=" + options.amount + "&order_id=" + response.razorpay_payment_id;
+                        },
+                        "prefill": {
+                            "name": "John Doe",
+                            "email": "john.doe@example.com",
+                            "contact": "9999999999"
+                        },
+                        "notes": {
+                            "address": "Hello World"
+                        },
+                        "theme": {
+                            "color": "#F37254"
+                        }
+                    };
+
+                    var rzp1 = new Razorpay(options);
+                    rzp1.open();
+                    e.preventDefault();
+                });
+            });
+        });
     </script>
+
 </body>
 
 </html>
