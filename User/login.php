@@ -1,31 +1,40 @@
 <?php
 include("../conn.php");
-
-
 session_start();
+
 if ($_SERVER["REQUEST_METHOD"] == 'POST' && isset($_POST['submit'])) {
     $email = mysqli_real_escape_string($conn, $_POST['email']);
     $password = mysqli_real_escape_string($conn, $_POST['password']);
 
-    // Query to check for user existence
-    $sql = "SELECT * FROM user_register WHERE email='$email'";
+    // Query to check if the user exists
+    $sql = "SELECT * FROM user_register WHERE email = '$email'";
     $result = mysqli_query($conn, $sql);
 
-    if (mysqli_num_rows($result) == 1) {
+    if ($result && mysqli_num_rows($result) == 1) {
         $user = mysqli_fetch_assoc($result);
         $hashedPassword = $user["password"];
-        // we take a name form darabse 
-        $name = $user["name"];
-        // Verify password
+        $name = $user["name"]; // Retrieve the user's name
+
+        // Verify the password
         if (password_verify($password, $hashedPassword)) {
+            // Set session variables
             $_SESSION['email'] = $email;
             $_SESSION['name'] = $name;
 
-            header('location:../index.php');
+            // Redirect to the index page or dashboard
+            header('Location: ../index.php');
+            exit;
+        } else {
+            // Incorrect password
+            $error = "Invalid email or password. Please try again.";
         }
+    } else {
+        // Email not found
+        $error = "Invalid email or password. Please try again.";
     }
 }
 ?>
+
 <!DOCTYPE html>
 <html lang="en">
 

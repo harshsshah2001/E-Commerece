@@ -20,6 +20,7 @@ if ($_SERVER["REQUEST_METHOD"] == "POST" && isset($_POST["submit"])) {
     $phone = mysqli_real_escape_string($conn, trim($_POST["phone"]));
     $password = mysqli_real_escape_string($conn, trim($_POST["password"]));
     $hashedPassword = password_hash($password, PASSWORD_BCRYPT);
+    
     $image = $_FILES['image']['name'];
     $target_dir = "../uploads/";
     $target_file = $target_dir . basename($image);

@@ -8,11 +8,6 @@ require '../vendor/autoload.php'; // Adjust the path if needed
 use PHPMailer\PHPMailer\PHPMailer;
 use PHPMailer\PHPMailer\Exception;
 
-// Ensure user is not logged in
-if (isset($_SESSION['email'])) {
-    header('Location: dashboard.php'); // Redirect to a logged-in dashboard or another page
-    exit;
-}
 
 $otp = substr(str_shuffle("0123456789"), 0, 5);
 
@@ -20,11 +15,11 @@ if ($_SERVER["REQUEST_METHOD"] == "POST" && isset($_POST["submit"])) {
     $email = mysqli_real_escape_string($conn, $_POST["email"]);
 
     // Check if the email exists
-    $emailcheck = "SELECT `email` FROM `user_register` WHERE email = '$email'";
+    $emailcheck = "SELECT email FROM user_register WHERE email = '$email'";
     $emailresult = mysqli_query($conn, $emailcheck);
 
     if (mysqli_num_rows($emailresult) > 0) {
-        $insertQuery = "INSERT INTO `password_reset`(`otp`) VALUES ('$otp')";
+        $insertQuery = "INSERT INTO password_reset(`email`,`otp`) VALUES ('$email','$otp')";
         $insertResult = mysqli_query($conn, $insertQuery);
 
         if ($insertResult) {
@@ -38,31 +33,31 @@ if ($_SERVER["REQUEST_METHOD"] == "POST" && isset($_POST["submit"])) {
                 echo "<p style='color: red;'>Failed to send OTP email.</p>";
             }
         } else {
-            echo "<p style='color: red;'>Data not inserted into the database.</p>";
+            echo "<p style='color: red;'>Failed to generate OTP. Please try again.</p>";
         }
     } else {
-        echo "<p style='color: red;'>Email not found.</p>";
+        echo "<p style='color: green;'>OTP already sent to your email. Please check your inbox.</p>";
     }
+} else {
+    echo "<p style='color: red;'>Email not found in our records.</p>";
+}
 
+if (isset($_POST["otp"])) {
+    $userOtp = mysqli_real_escape_string($conn, $_POST["otp"]);
+    $otpcheck = "SELECT otp FROM password_reset WHERE email = '$email' AND otp = '$userOtp'";
+    $otpresult = mysqli_query($conn, $otpcheck);
 
-    if (isset($_POST["otp"])) {
-        $userOtp = mysqli_real_escape_string($conn, $_POST["otp"]);
-        $otpcheck = "SELECT `otp` FROM `password_reset` WHERE otp='$userOtp'";
-        $otpresult = mysqli_query($conn, $otpcheck);
+    if (mysqli_num_rows($otpresult) > 0) {
 
-        if ($otpresult && mysqli_num_rows($otpresult) > 0) {
-
-            $row = mysqli_fetch_row($otpresult);
-            $fetchotp = $row['otp'];
-
-            if ($userOtp == $fetchotp) {
-                header('Location:newpassword.php');
-            } else {
-                echo "<h4>OTP not match</h4>";
-            }
-        }
+        // Redirect to the new password page
+        $_SESSION['email'] = $email; // Save the email in the session for the reset process
+        header('Location: newpassword.php');
+        exit;
+    } else {
+        echo "<h4 style='color: red;'>Invalid OTP. Please try again.</h4>";
     }
 }
+
 
 function smtp_mailer($to, $subject, $msg)
 {

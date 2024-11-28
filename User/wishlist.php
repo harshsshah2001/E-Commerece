@@ -8,7 +8,7 @@ if (!isset($_SESSION['email'])) {
 }
 
 
-
+$amount = 0;
 ?>
 
 
@@ -156,7 +156,6 @@ if (!isset($_SESSION['email'])) {
         <?php
         include('../conn.php');
 
-        $amount = 0;
         // Check if the required parameters are set
         if (isset($_GET["title"]) && isset($_GET["price"]) && isset($_GET["image"])) {
             $title = $_GET["title"];
@@ -181,9 +180,9 @@ if (!isset($_SESSION['email'])) {
         $results = mysqli_query($conn, $data);
 
         if (mysqli_num_rows($results) > 0) {
+
             while ($rows = mysqli_fetch_assoc($results)) {
                 $amount = $rows['price'];
-
                 echo ' 
         <div class="wishlist-cards">
             <div class="wishlist-card">
