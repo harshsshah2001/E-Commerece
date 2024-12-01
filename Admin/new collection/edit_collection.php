@@ -34,7 +34,7 @@ if ($_SERVER["REQUEST_METHOD"] == "POST" && isset($_POST["submit"])) {
     $image = $_FILES['image']['name'] ?? '';
     $target_dir = "../../uploads/";
     $target_file = $target_dir . basename($image);
-
+    
     if ($image && move_uploaded_file($_FILES['image']['tmp_name'], $target_file)) {
         $update_query = "UPDATE add_collection  
                          SET title = '$title', paragraph = '$paragraph', image = '$image' 

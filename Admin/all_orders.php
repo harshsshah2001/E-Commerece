@@ -2,7 +2,7 @@
 
 session_start();
 include('../conn.php');
-include('navbar.php');
+include('../Admin/navbar.php');
 
 if (!isset($_SESSION['admin_email'])) {
     // Redirect to login page if the session is not set
@@ -10,15 +10,15 @@ if (!isset($_SESSION['admin_email'])) {
     exit();
 }
 
-// $sql = "SELECT * FROM `payment`";
+// $sql = "SELECT * FROM payment";
 // $result = mysqli_query($conn, $sql);
 
 $searchQuery = "";
 if ($_SERVER["REQUEST_METHOD"] == "GET" && isset($_GET['searchsubmit'])) {
     $searchQuery = mysqli_real_escape_string($conn, trim($_GET['searchsubmit']));
-    $searchdata = "SELECT * FROM payment WHERE name LIKE '%$searchQuery%' OR name LIKE '%$searchQuery%' OR email LIKE '%$searchQuery%' OR order_id LIKE '%$searchQuery%'";
+    $searchdata = "SELECT * FROM payment WHERE name LIKE '%$searchQuery%' OR name LIKE '%$searchQuery%' OR email LIKE '%$searchQuery%' OR order_id LIKE '%$searchQuery%' order by id desc";
 } else {
-    $searchdata = "SELECT * FROM payment";
+    $searchdata = "SELECT * FROM payment order by id desc";
 }
 $searchresult = mysqli_query($conn, $searchdata);
 

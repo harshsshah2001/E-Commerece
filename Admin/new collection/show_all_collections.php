@@ -1,7 +1,8 @@
 <?php
 
-include('../../conn.php');
 session_start();
+include('../../conn.php');
+include('../navbar.php');
 
 if (!isset($_SESSION["admin_name"])) {
     header("location:../Admin_login.php");

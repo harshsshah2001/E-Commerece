@@ -1,9 +1,11 @@
 
 <?php
+session_start();
 
 include('../conn.php');
 
-session_start();
+
+
 
 // Get order ID and amount from the URL query parameters
 $order_id = isset($_GET['order_id']) ? $_GET['order_id'] : 'No Order ID';
@@ -27,4 +29,6 @@ try {
 } catch (Exception $e) {
     echo "Error: " . $e->getMessage();
 }
+
+
 ?>

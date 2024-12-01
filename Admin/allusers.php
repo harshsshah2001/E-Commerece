@@ -59,7 +59,7 @@ $status = isset($_GET['status']) ? $_GET['status'] : '';
             <div class="input-group">
                 <input type="text" name="search" class="form-control" placeholder="Search by name, email, or phone" value="<?= htmlspecialchars($searchQuery); ?>">
                 <button type="submit" class="btn btn-primary">Search</button>
-            </div>  
+            </div>
 
         </form>
 
