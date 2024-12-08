@@ -88,7 +88,7 @@ function smtp_mailer($to, $subject, $msg)
 
         // Set Gmail credentials
         $mail->Username = "hs6648279@gmail.com";  // Replace with your Gmail address
-        $mail->Password = "hmdh jshj qqcf aqzt"; // Replace with your Gmail App Password
+        $mail->Password = ""; // Replace with your Gmail App Password
         $mail->setFrom($email, "Harsh Shah"); // Replace with your sender details
 
         // Email details
